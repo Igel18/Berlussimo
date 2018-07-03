@@ -4,42 +4,78 @@
 # debian-9.3.0-amd64-netinstall.iso  
 # graphical (debian desktop environment) installed with default system tools 
 
-### setup berlussimo web app on nginx
+#!/bin/bash
+#
+# https://github.com/Igel18/Berlussimo
+#
+# Copyright (c) 2018 GNU Affero General Public License v3.0
 
-# login as root
-su 
+
+# Detect Debian users running the script with "sh" instead of bash
+if readlink /proc/$$/exe | grep -q "dash"; then
+	echo "This script needs to be run with bash, not sh"
+	exit
+fi
+
+if [[ "$EUID" -ne 0 ]]; then
+	echo "Sorry, you need to run this as root"
+	exit
+fi
+
+if [[ -e /etc/debian_version ]]; then
+	OS=debian
+	GROUPNAME=nogroup
+	RCLOCAL='/etc/rc.local'
+else
+	echo "Looks like you aren't running this installer on Debian, Ubuntu or CentOS"
+	exit
+fi
+
+echo 'Welcome to this berlussimo installer!'
+echo
 
 # upgrade debian
+echo 'update linux'
+
 apt update
 apt upgrade
 apt dist-upgrade
 
-# the following command restarts the server
-sudo shutdown -r now
-
-# login as root
-su 
-
 # install npm
+echo 'install curl'
+echo 
 apt install curl
 curl -sL https://deb.nodesource.com/setup_8.x | bash -
 apt update
 apt install -y nodejs
 
 # install nginx and dependencies
+echo 'install nginx'
+echo 
+
 apt install nginx libnginx-mod-nchan git libpng-dev nasm
+
+echo 'install php'
+echo 
 apt install php7.0 php7.0-gd php7.0-mysql php7.0-fpm php7.0-xml php7.0-mbstring php7.0-curl php7.0-bcmath php7.0-zip
-cd /var/www/; git clone https://github.com/BerlusGmbH/Berlussimo berlussimo
+
+echo 'get berlussimo from git'
+echo 
+cd /var/www/; git clone https://github.com/Igel18/Berlussimo berlussimo
 cd /var/www/berlussimo/; git checkout develop
 
 # install MySQL. The setup will let you set a root password for the mySQL server. You will need this later.
+echo 'install mysql'
+echo 
 apt-get install mysql-server
+# apt install mysql-workbench
 
 ### import database schema. Theese instructions will create a database named berlussimo.
 ### Set this name to reflect your settings from config.inc.php
 ### You will be prompted for the root password set above.
+echo 'install and setup database berlussimo with user root and password ra'
+echo 
 mysqladmin create -u root -p berlussimo
-
 ### Change password do "ra"
 mysql password ra
 
@@ -49,17 +85,10 @@ mysql -u root -pra
 ### Change Privileges 
 grant all privileges on berlussimo.* to root@localhost identified by 'ra';
 
-apt-install mysql-workbench 
-
-### workbench starten und testen mit der Standardverbindung, nur das password eingeben 
-mysql-workbench 
-
-# Control C to disconnect from mysql 
-
-mysql -u root -p berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.0.sql
-mysql -u root -p berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.1.sql
-mysql -u root -p berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.2.sql
-mysql -u root -p berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.3.sql
+mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.0.sql
+mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.1.sql
+mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.2.sql
+mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.3.sql
 
 #edit config to fit your mysql config
 #'mysql' => [
@@ -75,14 +104,13 @@ mysql -u root -p berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlu
 #            'strict' => false,
 #            'engine' => null,
 #        ],
-nano /var/www/berlussimo/config/database.php
+# nano /var/www/berlussimo/config/database.php
 
 #install composer and fetch dependencies
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 cd /var/www/berlussimo/
 
-# ggf ohne "php" 
-php composer install
+composer install
 
 echo "APP_KEY=" > .env
 php artisan key:generate
