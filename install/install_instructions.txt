@@ -1,9 +1,13 @@
 ### These instructions assume that you are running Debian 9. After completing these instructions
 ### you will have a basic installation with database and webserver.
+# https://www.debian.org/distrib/
+# debian-9.3.0-amd64-netinstall.iso  
+# graphical (debian desktop environment) installed with default system tools 
 
 ### setup berlussimo web app on nginx
 
 # login as root
+su 
 
 # upgrade debian
 apt update
@@ -13,9 +17,13 @@ apt dist-upgrade
 # the following command restarts the server
 sudo shutdown -r now
 
+# login as root
+su 
+
 # install npm
 apt install curl
 curl -sL https://deb.nodesource.com/setup_8.x | bash -
+apt update
 apt install -y nodejs
 
 # install nginx and dependencies
@@ -25,7 +33,7 @@ cd /var/www/; git clone https://github.com/BerlusGmbH/Berlussimo berlussimo
 cd /var/www/berlussimo/; git checkout develop
 
 # install MySQL. The setup will let you set a root password for the mySQL server. You will need this later.
-sudo apt-get install mysql-server
+apt-get install mysql-server
 
 ### import database schema. Theese instructions will create a database named berlussimo.
 ### Set this name to reflect your settings from config.inc.php
@@ -50,7 +58,7 @@ mysql -u root -p berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlu
 #            'strict' => false,
 #            'engine' => null,
 #        ],
-nano /var/www/berlussimo/app/config/database.php
+nano /var/www/berlussimo/config/database.php
 
 #install composer and fetch dependencies
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -84,6 +92,9 @@ chown -R www-data:www-data /var/www/berlussimo
 # reflect settings from install/config/nginx/default
 nano /etc/nginx/sites-available/default
 systemctl restart nginx
+
+#oder einfach die Datei kopieren:  
+#cp /var/www/berlussimo/install/config/nginx/default /etc/nginx/sites-available/
 
 # copy install/config/systemd/laravell-queue.service to /etc/systemd/system/
 cp /var/www/berlussimo/install/config/systemd/laravel-queue.service /etc/systemd/system/
