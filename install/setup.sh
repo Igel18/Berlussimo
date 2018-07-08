@@ -37,27 +37,27 @@ echo
 # upgrade debian
 echo 'update linux'
 
-apt update
-apt upgrade
-apt dist-upgrade
+apt update --yes
+apt upgrade --yes
+apt dist-upgrade --yes
 
 # install npm
 echo 'install curl'
 echo 
-apt install curl
+apt install curl --yes
 curl -sL https://deb.nodesource.com/setup_8.x | bash -
-apt update
-apt install -y nodejs
+apt update --yes
+apt install -y nodejs --yes
 
 # install nginx and dependencies
 echo 'install nginx'
 echo 
 
-apt install nginx libnginx-mod-nchan git libpng-dev nasm
+apt install nginx libnginx-mod-nchan git libpng-dev nasm --yes
 
 echo 'install php'
 echo 
-apt install php7.0 php7.0-gd php7.0-mysql php7.0-fpm php7.0-xml php7.0-mbstring php7.0-curl php7.0-bcmath php7.0-zip
+apt install php7.0 php7.0-gd php7.0-mysql php7.0-fpm php7.0-xml php7.0-mbstring php7.0-curl php7.0-bcmath php7.0-zip --yes
 
 echo 'get berlussimo from git'
 echo 
@@ -67,7 +67,7 @@ cd /var/www/berlussimo/; git checkout develop
 # install MySQL. The setup will let you set a root password for the mySQL server. You will need this later.
 echo 'install mysql'
 echo 
-apt-get install mysql-server
+apt-get install mysql-server --yes
 # apt install mysql-workbench
 
 ### import database schema. Theese instructions will create a database named berlussimo.
@@ -83,7 +83,7 @@ mysql password ra
 mysql -u root -pra 
 
 ### Change Privileges 
-grant all privileges on berlussimo.* to root@localhost identified by 'ra';
+# grant all privileges on berlussimo.* to root@localhost identified by 'ra';
 
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.0.sql
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.1.sql
@@ -136,11 +136,12 @@ chown -R www-data:www-data /var/www/berlussimo
 
 # edit default (/etc/nginx/sites-available/default) site to
 # reflect settings from install/config/nginx/default
-nano /etc/nginx/sites-available/default
-systemctl restart nginx
+#nano /etc/nginx/sites-available/default
+#systemctl restart nginx
 
 #oder einfach die Datei kopieren:  
-#cp /var/www/berlussimo/install/config/nginx/default /etc/nginx/sites-available/
+cp /var/www/berlussimo/install/config/nginx/default /etc/nginx/sites-available/
+systemctl restart nginx
 
 # copy install/config/systemd/laravell-queue.service to /etc/systemd/system/
 cp /var/www/berlussimo/install/config/systemd/laravel-queue.service /etc/systemd/system/
