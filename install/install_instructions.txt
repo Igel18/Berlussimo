@@ -1,3 +1,9 @@
+### Installation of Debian 
+Install Debian 9 e.g. in VM
+be sure network is enabled 
+minimum 16GB HDD must be available
+
+
 ### These instructions assume that you are running Debian 9. After completing these instructions
 ### you will have a basic installation with database and webserver.
 # https://www.debian.org/distrib/

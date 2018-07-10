@@ -10,6 +10,7 @@
 #
 # Copyright (c) 2018 GNU Affero General Public License v3.0
 
+### Attention: You should only use this script for develop becouse of default passwords and usernames
 
 # Detect Debian users running the script with "sh" instead of bash
 if readlink /proc/$$/exe | grep -q "dash"; then
@@ -49,6 +50,9 @@ curl -sL https://deb.nodesource.com/setup_8.x | bash -
 apt update --yes
 apt install -y nodejs --yes
 
+# update npm to latest release 
+npm -i -g npm 
+
 # install nginx and dependencies
 echo 'install nginx'
 echo 
@@ -79,12 +83,17 @@ mysqladmin create -u root -p berlussimo
 ### Change password do "ra"
 mysql password ra
 
+echo 'please type manually the password ra and then the sql command to change privileges'
+echo
+
 ### Connect to mysql 
 mysql -u root -pra 
-
-### Change Privileges 
+ 
+## Change Privileges 
 # grant all privileges on berlussimo.* to root@localhost identified by 'ra';
 
+echo 'setup database query for berlussimo'
+echo 
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.0.sql
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.1.sql
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.2.sql
@@ -107,6 +116,8 @@ mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/ber
 # nano /var/www/berlussimo/config/database.php
 
 #install composer and fetch dependencies
+echo 'install composer'
+echo 
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 cd /var/www/berlussimo/
 
@@ -126,12 +137,18 @@ php artisan passport:install
 php artisan passport:keys
 
 # install node dependencies
+echo 'install npm node dependencies'
+echo 
 npm install
 
 # build javascript app
+echo 'build javascript app'
+echo 
 npm run prod
 
 #make web directory writeable by the webserver
+echo 'make web directory writeable by the webserver'
+echo 
 chown -R www-data:www-data /var/www/berlussimo
 
 # edit default (/etc/nginx/sites-available/default) site to
@@ -140,6 +157,8 @@ chown -R www-data:www-data /var/www/berlussimo
 #systemctl restart nginx
 
 #oder einfach die Datei kopieren:  
+echo 'copy webserver configuration and restart the webserver'
+echo 
 cp /var/www/berlussimo/install/config/nginx/default /etc/nginx/sites-available/
 systemctl restart nginx
 
