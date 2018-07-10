@@ -32,17 +32,21 @@ else
 	exit
 fi
 
+echo
 echo 'Welcome to this berlussimo installer!'
 echo
 
 # upgrade debian
+echo
 echo 'update linux'
+echo
 
 apt update --yes
 apt upgrade --yes
 apt dist-upgrade --yes
 
 # install npm
+echo 
 echo 'install curl'
 echo 
 apt install curl --yes
@@ -54,21 +58,24 @@ apt install -y nodejs --yes
 npm -i -g npm 
 
 # install nginx and dependencies
+echo
 echo 'install nginx'
 echo 
-
 apt install nginx libnginx-mod-nchan git libpng-dev nasm --yes
 
+echo
 echo 'install php'
 echo 
 apt install php7.0 php7.0-gd php7.0-mysql php7.0-fpm php7.0-xml php7.0-mbstring php7.0-curl php7.0-bcmath php7.0-zip --yes
 
+echo
 echo 'get berlussimo from git'
 echo 
 cd /var/www/; git clone https://github.com/Igel18/Berlussimo berlussimo
 cd /var/www/berlussimo/; git checkout develop
 
 # install MySQL. The setup will let you set a root password for the mySQL server. You will need this later.
+echo
 echo 'install mysql'
 echo 
 apt-get install mysql-server --yes
@@ -77,21 +84,24 @@ apt-get install mysql-server --yes
 ### import database schema. Theese instructions will create a database named berlussimo.
 ### Set this name to reflect your settings from config.inc.php
 ### You will be prompted for the root password set above.
+echo 
 echo 'install and setup database berlussimo with user root and password ra'
 echo 
 mysqladmin create -u root -p berlussimo
 ### Change password do "ra"
 mysql password ra
 
-echo 'please type manually the password ra and then the sql command to change privileges'
+echo
+echo 'please type manually the password ra and then the sql command to change privileges if not automated'
 echo
 
-### Connect to mysql 
-mysql -u root -pra 
+### Connect to mysql and Change Privileges 
+mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_permissions.sql
  
 ## Change Privileges 
 # grant all privileges on berlussimo.* to root@localhost identified by 'ra';
 
+echo 
 echo 'setup database query for berlussimo'
 echo 
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.0.sql
@@ -99,23 +109,8 @@ mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/ber
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.2.sql
 mysql -u root -pra berlussimo < /var/www/berlussimo/install/DB-Version-0.4.0/berlussimo_db_0.4.3.sql
 
-#edit config to fit your mysql config
-#'mysql' => [
-#            'driver' => 'mysql',
-#            'host' => env('DB_HOST', 'localhost'),
-#            'port' => env('DB_PORT', '3306'),
-#            'database' => env('DB_DATABASE', 'berlussimo'),
-#            'username' => env('DB_USERNAME', 'root'),
-#            'password' => env('DB_PASSWORD', 'ra'),
-#            'charset' => 'utf8',
-#            'collation' => 'utf8_unicode_ci',
-#            'prefix' => '',
-#            'strict' => false,
-#            'engine' => null,
-#        ],
-# nano /var/www/berlussimo/config/database.php
-
 #install composer and fetch dependencies
+echo 
 echo 'install composer'
 echo 
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -132,21 +127,24 @@ php artisan route:cache
 php artisan parser:generate
 
 # if you setup a fresh database
-php artisan passport:install
+# php artisan passport:install
 # else if you only setup a fresh webserver
 php artisan passport:keys
 
 # install node dependencies
+echo
 echo 'install npm node dependencies'
 echo 
 npm install
 
 # build javascript app
+echo
 echo 'build javascript app'
 echo 
 npm run prod
 
 #make web directory writeable by the webserver
+echo
 echo 'make web directory writeable by the webserver'
 echo 
 chown -R www-data:www-data /var/www/berlussimo
@@ -157,14 +155,25 @@ chown -R www-data:www-data /var/www/berlussimo
 #systemctl restart nginx
 
 #oder einfach die Datei kopieren:  
-echo 'copy webserver configuration and restart the webserver'
+echo
+echo 'copy webserver configuration'
 echo 
 cp /var/www/berlussimo/install/config/nginx/default /etc/nginx/sites-available/
+
+echo
+echo 'restart the webserver'
+echo 
 systemctl restart nginx
 
+echo
+echo 'copy laravell configuration and restart the webserver'
+echo 
 # copy install/config/systemd/laravell-queue.service to /etc/systemd/system/
 cp /var/www/berlussimo/install/config/systemd/laravel-queue.service /etc/systemd/system/
 
+echo
+echo 'restart laravel'
+echo 
 # start laravel queue and enable start on startup
 systemctl start laravel-queue
 systemctl enable laravel-queue
@@ -172,3 +181,9 @@ systemctl enable laravel-queue
 ### you should now be able to open http://<your_server>/ in your browser and login with
 # login: admin@berlussimo
 # password: password
+
+echo
+echo 'you should now be able to open http://localhost/ in your browser and login with'
+echo 'login: admin@berlussimo'
+echo 'password: password'
+echo 
