@@ -55,14 +55,22 @@ apt update --yes
 apt install -y nodejs --yes
 
 # update npm to latest release 
-npm -i -g npm 
+# npm -i -g npm 
 
 # install nginx and dependencies
 echo
 echo 'install nginx'
 echo 
-apt install nginx libnginx-mod-nchan git libpng-dev nasm --yes
+apt install nginx libnginx-mod-nchan git nasm --yes
 
+# install libpng 12
+echo 
+echo 'install libpng 12'
+echo 
+wget http://ftp.de.debian.org/debian/pool/main/libp/libpng/libpng12-0_1.2.50-2+deb8u3_amd64.deb -P ~
+apt install ~/libpng12-0_1.2.50-2+deb8u3_amd64.deb
+
+#install php 
 echo
 echo 'install php'
 echo 
@@ -166,7 +174,7 @@ echo
 systemctl restart nginx
 
 echo
-echo 'copy laravell configuration and restart the webserver'
+echo 'copy laravel configuration and restart the webserver'
 echo 
 # copy install/config/systemd/laravell-queue.service to /etc/systemd/system/
 cp /var/www/berlussimo/install/config/systemd/laravel-queue.service /etc/systemd/system/
