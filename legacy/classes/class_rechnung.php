@@ -291,16 +291,18 @@ class rechnung
 
         $datum_feld = 'document.getElementById("eingangsdatum").value';
         $js_datum = "onchange='check_datum($datum_feld)'";
-        $formular->text_feld('Eingangsdatum:', 'eingangsdatum', '', '10', 'eingangsdatum', $js_datum);
-        $form->text_feld("Rechnungsnummer:", "rechnungsnummer", "", "10");
+        $formular->text_feld('Eingangsdatum', 'eingangsdatum', '', '10', 'eingangsdatum', $js_datum);
+        $form->text_feld("Rechnungsnummer", "rechnungsnummer", "", "10");
         $form->hidden_feld("rechnungstyp", "Rechnung");
         $datum_feld1 = 'document.getElementById("rechnungsdatum").value';
         $js_datum = "onchange='check_datum($datum_feld1)'";
-        $formular->text_feld('Rechnungsdatum:', 'rechnungsdatum', '', '10', 'rechnungsdatum', $js_datum);
+        $formular->text_feld('Rechnungsdatum', 'rechnungsdatum', '', '10', 'rechnungsdatum', $js_datum);
         $form->hidden_feld("nettobetrag", "0,00");
         $form->hidden_feld("bruttobetrag", "0,00");
         $form->hidden_feld("skontobetrag", "0,00");
         $form->text_feld("Fällig am", "faellig_am", '', "10");
+        $formular->text_feld('Leistungsanfang', 'leistung_von', '', '10', 'leistung_von', null);
+        $formular->text_feld('Leistungsende', 'leistung_bis', '', '10', 'leistung_bis', null);
         $form->text_bereich("Kurzbeschreibung", "kurzbeschreibung", "", "50", "10");
         $form->send_button("submit_rechnung1", "Rechnung speichern");
         $form->hidden_feld("option", "rechnung_erfassen1");
@@ -776,7 +778,9 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
         $faellig_am = date_mysql2german($faellig_am);
         $d_heute = date("d.m.Y");
         $f->datum_feld('Rechnungsdatum', 'rechnungsdatum', "$d_heute", 'rechnungsdatum');
-        $f->datum_feld('Faellig am', 'faellig_am', "$faellig_am", 'faellig_am');
+        $f->datum_feld('Fällig am', 'faellig_am', "$faellig_am", 'faellig_am');
+        $f->datum_feld('Leistungsanfang', 'servicetime_from', "", 'servicetime_from');
+        $f->datum_feld('Leistungsende', 'servicetime_to', "", 'servicetime_to');
 
         echo "</td><td colspan=6>";
         echo "</td></tr>";
@@ -785,7 +789,7 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
         $geld_konto_info->dropdown_geldkonten($aussteller_typ, $aussteller_id);
         echo "</td></tr>";
         echo "<div id=\"pool_tabelle\" $js_action>";
-        echo "<tr><th>POOL</th><th><input type=\"checkbox\" class='filled-in' id='alle' onClick=\"check_all_boxes(this.checked, 'positionen_list_')\" $js_action><label for='alle'>Alle</label></th><th>Rechnung</th><th>UPos</th><th>Pos</th><th>Menge</th><th>Bezeichnung</th><th>Einzelpreis</th><th>Netto</th><th>Rabatt %</th><th>Skonto</th><th>MWSt</th><th>Kostentraeger</th></tr>";
+        echo "<tr><th>POOL</th><th><input type=\"checkbox\" class='filled-in' id='alle' onClick=\"check_all_boxes(this.checked, 'positionen_list_')\" $js_action><label for='alle'>Alle</label></th><th>Rechnung</th><th>UPos</th><th>Pos</th><th>Bezeichnung</th><th>Menge</th><th>Einzelpreis</th><th>Netto</th><th>Rabatt %</th><th>Skonto</th><th>MWSt</th></tr>";
         $f->hidden_feld('RECHNUNG_EMPFAENGER_TYP', "$kostentraeger_typ");
         $f->hidden_feld('RECHNUNG_EMPFAENGER_ID', "$rechnungs_empfaenger_id");
         $f->hidden_feld('RECHNUNG_AUSSTELLER_TYP', "$aussteller_typ");
@@ -825,10 +829,13 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
             $rrr = new rechnungen ();
             $rrr->btn_pool($kostentraeger_typ, $kostentraeger_id, $kontierung_dat, 'this');
 
-            echo "</td><td><input type=\"checkbox\" class='filled-in' name=uebernehmen[] id=\"positionen_list_$a\" value=\"$a\" $js_action><label for='positionen_list_$a'>$zeile</label></td><td>$link_rechnung_ansehen</td><td>$position</td><td>$zeile.</td><td>";
+            echo "</td><td><input type=\"checkbox\" class='filled-in' name=\"uebernehmen[]\" id=\"positionen_list_$a\" value=\"$a\" $js_action><label for='positionen_list_$a'>$zeile</label></td><td>$link_rechnung_ansehen</td><td>$position</td><td>$zeile.</td>";
+
+            echo "<td>$artikel_bezeichnung</td><td>";
 
             $f->text_feld("Menge:", "positionen[$a][menge]", "$menge", "5", "mengen_feld_" . $a, $js_action);
-            echo "</td><td>$artikel_bezeichnung</td><td>";
+
+            echo "</td><td>";
             $f->text_feld("Einzelpreis:", "positionen[$a][preis]", "$epreis", "8", "epreis_feld_" . $a, $js_action);
             echo "</td><td>";
             $f->text_feld_inaktiv("Netto:", "", "$gpreis", "8", "netto_feld_" . $a, $js_action);
@@ -841,7 +848,7 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
             $f->text_feld("Skonto:", "positionen[$a][skonto]", "$skonto", "5", "skonto_feld_" . $a, $js_action);
             echo "</td><td>";
             $f->text_feld("Mwst:", "mwst_satz", "$mwst_satz_in_prozent", "3", "mwst_feld_" . $a, $js_action);
-            echo "</td><td valign=bottom>$kostentraeger</td></tr>";
+            echo "</td></tr>";
         }
 
         echo "<tr><td colspan=10><hr></td></tr></table>";
@@ -1088,12 +1095,6 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
             return $w->w_name;
         }
 
-        if ($kostentraeger_typ == 'Wirtschaftseinheit') {
-            $w = new wirt_e ();
-            $w->get_wirt_e_infos($kostentraeger_id);
-            return $w->w_name;
-        }
-
         if ($kostentraeger_typ == 'Baustelle_ext') {
             $s = new statistik ();
             $s->get_baustelle_ext_infos($kostentraeger_id);
@@ -1106,10 +1107,9 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
             return $bez;
         }
 
-        if ($kostentraeger_typ == 'Benutzer') {
-            $be = new benutzer ();
-            $be->get_benutzer_infos($kostentraeger_id);
-            return $be->benutzername;
+        if ($kostentraeger_typ == 'Person') {
+            $p = \App\Models\Person::find($kostentraeger_id);
+            return $p->full_name;
         }
     }
 
@@ -1337,6 +1337,8 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
         $rechnungs_aussteller_id = $clean_arr ['aussteller_id'];
         $rechnungs_empfaenger_typ = $clean_arr ['empfaenger_typ'];
         $rechnungs_empfaenger_id = $clean_arr ['empfaenger_id'];
+        $leistung_von = $clean_arr ['leistung_von'] ? "'" . date_german2mysql($clean_arr ['leistung_von']) . "'" : 'NULL';
+        $leistung_bis = $clean_arr ['leistung_bis'] ? "'" . date_german2mysql($clean_arr ['leistung_bis']) . "'" : 'NULL';
 
         if ($rechnungs_empfaenger_id == $rechnungs_aussteller_id && $rechnungs_empfaenger_typ == $rechnungs_aussteller_typ) {
             $rechnungs_typ_druck = 'Buchungsbeleg';
@@ -1399,7 +1401,7 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
                 $bezahlt_am = '0000-00-00';
             }
 
-            $db_abfrage = "INSERT INTO RECHNUNGEN VALUES (NULL, '$letzte_belegnr', '$rechnungsnummer', '$letzte_aussteller_rnr', '$letzte_empfaenger_rnr', '$rechnungs_typ', '$rechnungsdatum','$eingangsdatum', '$netto_betrag','$brutto_betrag','0.00', '$rechnungs_aussteller_typ', '$rechnungs_aussteller_id','$rechnungs_empfaenger_typ', '$rechnungs_empfaenger_id','1', '1', '0', '0', '1', '$status_bezahlt', '0', '$faellig_am', '$bezahlt_am', '$kurzbeschreibung', '$clean_arr[geld_konto]')";
+            $db_abfrage = "INSERT INTO RECHNUNGEN VALUES (NULL, '$letzte_belegnr', '$rechnungsnummer', '$letzte_aussteller_rnr', '$letzte_empfaenger_rnr', '$rechnungs_typ', '$rechnungsdatum','$eingangsdatum', '$netto_betrag','$brutto_betrag','0.00', '$rechnungs_aussteller_typ', '$rechnungs_aussteller_id','$rechnungs_empfaenger_typ', '$rechnungs_empfaenger_id','1', '1', '0', '0', '1', '$status_bezahlt', '0', '$faellig_am', '$bezahlt_am', '$kurzbeschreibung', '$clean_arr[geld_konto]', NULL, $leistung_von, $leistung_bis)";
             DB::insert($db_abfrage);
 
             /* Protokollieren */
@@ -1535,6 +1537,8 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
             /* Rechnungsdaten speichern */
             $eingangsdatum = $rechnungsdatum_sql;
             $faellig_am = date_german2mysql($clean_arr ['RECHNUNG_FAELLIG_AM']);
+            $servicetime_from = $clean_arr ['servicetime_from'] ? "'" . date_german2mysql($clean_arr ['servicetime_from']) . "'" : 'NULL';
+            $servicetime_to = $clean_arr ['servicetime_to'] ? "'" . date_german2mysql($clean_arr ['servicetime_to']) . "'" : 'NULL';
             $kurzbeschreibung = $clean_arr ['kurzbeschreibung'];
 
             $netto_betrag = $clean_arr ['nettobetrag'];
@@ -1554,7 +1558,7 @@ WHERE RECHNUNGEN.BELEG_NR = RECHNUNGEN_POSITIONEN.BELEG_NR && RECHNUNGEN.AKTUELL
             $letzte_belegnr = $this->letzte_beleg_nr();
             $letzte_belegnr = $letzte_belegnr + 1;
 
-            $db_abfrage = "INSERT INTO RECHNUNGEN VALUES (NULL, '$letzte_belegnr', '$rechnungsnummer', '$letzte_aussteller_rnr', '$letzte_empfaenger_rnr', '$this->rechnungs_typ_druck', '$rechnungsdatum_sql','$eingangsdatum', '$netto_betrag','$brutto_betrag','$skonto_betrag', '$this->rechnungs_aussteller_typ', '$this->rechnungs_aussteller_id','$this->rechnungs_empfaenger_typ', '$this->rechnungs_empfaenger_id','1', '1', '1', '0', '1', '0', '0', '$faellig_am', '0000-00-00', '$kurzbeschreibung', '$empfangs_geld_konto')";
+            $db_abfrage = "INSERT INTO RECHNUNGEN VALUES (NULL, '$letzte_belegnr', '$rechnungsnummer', '$letzte_aussteller_rnr', '$letzte_empfaenger_rnr', '$this->rechnungs_typ_druck', '$rechnungsdatum_sql','$eingangsdatum', '$netto_betrag','$brutto_betrag','$skonto_betrag', '$this->rechnungs_aussteller_typ', '$this->rechnungs_aussteller_id','$this->rechnungs_empfaenger_typ', '$this->rechnungs_empfaenger_id','1', '1', '1', '0', '1', '0', '0', '$faellig_am', '0000-00-00', '$kurzbeschreibung', '$empfangs_geld_konto', NULL, $servicetime_from, $servicetime_to)";
             DB::insert($db_abfrage);
             /* Protokollieren */
             $last_dat = DB::getPdo()->lastInsertId();

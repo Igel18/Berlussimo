@@ -64,7 +64,10 @@ mix.ts(
 
 mix.js(
     [
-        'resources/assets/js/materialize.js'
+        'resources/assets/js/materialize.js',
+        'resources/assets/js/materialize_autocomplete.js',
+        'resources/assets/js/materialize_chips_autocomplete.js',
+        'resources/assets/js/materialize_init.js'
     ],
     'public/js/'
 );
@@ -74,8 +77,7 @@ mix.scripts(
         'legacy/ajax/ajax.js',
         'legacy/ajax/dd_kostenkonto.js',
         'legacy/js/javascript.js',
-        'legacy/js/sorttable.js',
-        'legacy/js/foto_upload.js'
+        'legacy/js/sorttable.js'
     ],
     'public/js/legacy.js'
 );

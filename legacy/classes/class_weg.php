@@ -158,7 +158,7 @@ class weg
         $e = new einheit ();
         $e->get_einheit_info($einheit_id);
         $d = new detail ();
-        $this->weg_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+        $this->weg_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
         $this->e = $e;
 
         /* OBJEKT DETAILS */
@@ -422,7 +422,7 @@ class weg
                 $eig_zahl = $a + 1;
                 echo "<tr><th>EIGENTÜMER $eig_zahl</th><th>$vorname $nachname</th></tr>";
                 $d = new detail ();
-                $arr = $d->finde_alle_details_arr('PERSON', $person_id);
+                $arr = $d->finde_alle_details_arr('Person', $person_id);
                 $anz_detail = count($arr);
                 for ($b = 0; $b < $anz_detail; $b++) {
                     $detail_name = $arr [$b] ['DETAIL_NAME'];
@@ -477,7 +477,7 @@ class weg
 
     function get_person_id_eigentuemer_arr($id)
     {
-        $result = DB::select("SELECT PERSON_ID FROM WEG_EIGENTUEMER_PERSON WHERE WEG_EIG_ID='$id' && AKTUELL='1'");
+        $result = DB::select("SELECT PERSON_ID FROM WEG_EIGENTUEMER_PERSON WHERE WEG_EIG_ID='$id' && AKTUELL='1' ORDER BY PERSON_ID");
         return $result;
     }
 
@@ -628,12 +628,12 @@ class weg
         $this->einheit_qm_d = $e->einheit_qm_d;
         $det = new detail ();
 
-        $versprochene_miete = $det->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-KaltmieteINS');
+        $versprochene_miete = $det->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-KaltmieteINS');
         if ($versprochene_miete) {
             $this->versprochene_miete = nummer_komma2punkt($versprochene_miete);
         }
 
-        $this->einheit_qm_weg_d = $det->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Fläche'); // kommt als Kommazahl
+        $this->einheit_qm_weg_d = $det->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Fläche'); // kommt als Kommazahl
         if ($this->einheit_qm_weg_d) {
             $this->einheit_qm_weg = nummer_komma2punkt($this->einheit_qm_weg_d);
         } else {
@@ -896,8 +896,8 @@ class weg
             echo "<table class='striped'>";
             echo "<tr><th>OBJEKT</th><th>WEG</th><th></th><th>QM</th><th></th><th></th><th>GESAMTANTEILE</th><th></th><th></th><th></th></tr>";
             $d = new detail ();
-            $weg_bez = $d->finde_detail_inhalt('OBJEKT', $objekt_id, 'WEG-Bezeichnung');
-            $anteile_g = $d->finde_detail_inhalt('OBJEKT', $objekt_id, 'Gesamtanteile');
+            $weg_bez = $d->finde_detail_inhalt('Objekt', $objekt_id, 'WEG-Bezeichnung');
+            $anteile_g = $d->finde_detail_inhalt('Objekt', $objekt_id, 'Gesamtanteile');
             echo "<tr><td><b>$o->objekt_kurzname</b></td><td>$weg_bez</td><td></td><td>$qm_g m²</td><td></td><td>$anteile_g</td><td></td><td></td><td></td></tr>";
             echo "<tr><th>EINHEIT</th><th>EIGENTÜMER</th><th>STRASSE, NR, PLZ ORT</th><th>QM</th><th>QM ET</th><th>LAGE</th><th>ANTEILE</th><th>OPTIONEN</th><th>VOREIGENTÜMER</th><th>ET-OPTION</th></tr>";
             $g_qm = 0;
@@ -910,10 +910,10 @@ class weg
                 $e->get_einheit_info($einheit_id);
                 $u_link = "<a href='" . route('web::weg::legacy', ['option' => 'einheit_uebersicht', 'einheit_id' => $einheit_id]) . "'>$e->einheit_kurzname</a>";
                 $this->get_last_eigentuemer_namen($einheit_id);
-                $this->weg_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+                $this->weg_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
                 $e->einheit_qm_a = nummer_punkt2komma($e->einheit_qm);
                 $g_qm += $e->einheit_qm;
-                $et_qm = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Fläche');
+                $et_qm = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Fläche');
                 $def_link = "<a href='" . route('web::weg::legacy', ['option' => 'wohngeld_definieren', 'einheit_id' => $einheit_id]) . "'>Wohngeld bestimmen</a>";
                 $hg_auszug_link = "<a href='" . route('web::weg::legacy', ['option' => 'hausgeld_kontoauszug', 'eigentuemer_id' => $this->eigentuemer_id]) . "'>Hausgeld Kontoauszug</a>";
                 $hg_auszug_link1 = "<a href='" . route('web::weg::legacy', ['option' => 'hg_kontoauszug', 'eigentuemer_id' => $this->eigentuemer_id, 'jahr' => date('Y')]) . "'><img src=\"images/pdf_light.png\"></a>";
@@ -1206,7 +1206,19 @@ class weg
             $summe_zahlungen_hz = $this->get_summe_zahlungen('Eigentuemer', $eigentuemer_id, $monat, $jahr, $geldkonto_id, 6010);
             $summe_zahlungen_hg = $this->get_summe_zahlungen('Eigentuemer', $eigentuemer_id, $monat, $jahr, $geldkonto_id, 6020);
             $summe_zahlungen_ihr = $this->get_summe_zahlungen('Eigentuemer', $eigentuemer_id, $monat, $jahr, $geldkonto_id, 6030);
-            $summe_zahlungen = $summe_zahlungen_hz + $summe_zahlungen_hg + $summe_zahlungen_ihr + $summe_zahlungen_6;
+            $summe_zahlungen_su = \App\Models\Posting::where('KOSTENTRAEGER_TYP', 'Eigentuemer')
+                ->where('KOSTENTRAEGER_ID', $eigentuemer_id)
+                ->whereYear('DATUM', $jahr)
+                ->whereMonth('DATUM', $monat)
+                ->where('GELDKONTO_ID', $geldkonto_id)
+                ->where('KONTENRAHMEN_KONTO', '>=', 8000)
+                ->where('KONTENRAHMEN_KONTO', '<', 9000)
+                ->sum('BETRAG');
+            $summe_zahlungen = $summe_zahlungen_hz
+                + $summe_zahlungen_hg
+                + $summe_zahlungen_ihr
+                + $summe_zahlungen_6
+                + $summe_zahlungen_su;
             $this->zb_bisher += $summe_zahlungen;
 
             if ($summe_zahlungen > 0) {
@@ -1807,15 +1819,16 @@ class weg
 
     function get_eigentumer_id_infos($e_id)
     {
-        $einheit_id = $this->get_einheit_id_from_eigentuemer($e_id);
-        $this->einheit_id = $einheit_id;
+        if (!$this->einheit_id) {
+            $this->einheit_id = $this->get_einheit_id_from_eigentuemer($e_id);
+        }
         $e = new einheit ();
-        $e->get_einheit_info($einheit_id);
+        $e->get_einheit_info($this->einheit_id);
         $this->haus_strasse = $e->haus_strasse;
         $this->haus_nummer = $e->haus_nummer;
         $this->einheit_kurzname = $e->einheit_kurzname;
         $this->objekt_id = $e->objekt_id;
-        $this->get_last_eigentuemer_namen($einheit_id);
+        $this->get_last_eigentuemer_namen($this->einheit_id);
         $miteigentuemer_namen = strip_tags($this->eigentuemer_namen2);
         $this->get_anrede_eigentuemer($e_id);
         return "$e->einheit_kurzname $miteigentuemer_namen";
@@ -1830,14 +1843,21 @@ class weg
 
         $personen_id_arr = $this->get_person_id_eigentuemer_arr($this->eigentuemer_id);
         $anz_p = count($personen_id_arr);
-        if (!$anz_p) {
-        } else {
+        if ($anz_p) {
             unset ($this->eigentuemer_name);
 
             for ($a = 0; $a < $anz_p; $a++) {
                 $person_id = $personen_id_arr [$a] ['PERSON_ID'];
                 $p = new personen ();
                 $p->get_person_infos($person_id);
+                if ($this->einheit_id) {
+                    $e = new einheit();
+                    $e->get_einheit_info($this->einheit_id);
+                    $this->haus_plz = $e->haus_plz;
+                    $this->haus_stadt = $e->haus_stadt;
+                    $this->haus_strasse = $e->haus_strasse;
+                    $this->haus_nummer = $e->haus_nummer;
+                }
                 $this->eigentuemer_name [$a] ['person_id'] = $person_id;
                 $this->eigentuemer_name [$a] ['Nachname'] = $p->person_nachname;
                 $this->eigentuemer_name [$a] ['Vorname'] = $p->person_vorname;
@@ -1863,8 +1883,8 @@ class weg
                 }
 
                 $d = new detail ();
-                if ($d->finde_detail_inhalt('PERSON', $person_id, 'Anschrift')) {
-                    $this->postanschrift [$a] = $d->finde_detail_inhalt('PERSON', $person_id, 'Anschrift');
+                if ($d->finde_detail_inhalt('Person', $person_id, 'Anschrift')) {
+                    $this->postanschrift [$a] = $d->finde_detail_inhalt('Person', $person_id, 'Anschrift');
                 } else {
                     $this->postanschrift [$a] = "$this->haus_strasse $this->haus_nummer\n$this->haus_plz $this->haus_stadt";
                     $this->eigentuemer_name_str_u1 .= "$anrede $p->person_nachname $p->person_vorname\n";
@@ -1876,6 +1896,9 @@ class weg
             $this->eigentuemer_name = $arr;
             $this->pdf_anrede = 'Sehr ';
             for ($a = 0; $a < $anz_p; $a++) {
+                $person_id = $personen_id_arr [$a] ['PERSON_ID'];
+                $p = new personen ();
+                $p->get_person_infos($person_id);
                 if ($a == 0) {
                     $this->pdf_anrede .= $this->eigentuemer_name [$a] ['Anrede'] . ',<br>';
                 } else {
@@ -1896,8 +1919,8 @@ class weg
 
                 $this->eigentuemer_name_str_u1 = '';
                 $d = new detail ();
-                if ($d->finde_detail_inhalt('PERSON', $person_id, 'Anschrift')) {
-                    $this->postanschrift [$a] = $d->finde_detail_inhalt('PERSON', $person_id, 'Anschrift');
+                if ($d->finde_detail_inhalt('Person', $person_id, 'Anschrift')) {
+                    $this->postanschrift [$a] = $d->finde_detail_inhalt('Person', $person_id, 'Anschrift');
                 } else {
                     $this->postanschrift [$a] = "$this->eig_namen_u_pdf$this->haus_strasse $this->haus_nummer\n$this->haus_plz $this->haus_stadt";
                     $this->eigentuemer_name_str_u1 .= "$anrede $p->person_nachname $p->person_vorname\n";
@@ -1981,7 +2004,7 @@ class weg
                 $this->get_last_eigentuemer_namen($this->einheit_id);
                 $this->get_wg_info($monat, $jahr, 'Einheit', $this->einheit_id, 'Hausgeld');
                 $this->Wohngeld_soll_a = nummer_punkt2komma($this->gruppe_erg);
-                $mahn_link = "<a href='" . route('web::weg::legacy', ['option' => 'mahnen', 'eig' => $this->eigentuemer_id]) . "'>Mahnen</a>";
+                $mahn_link = "<a href='" . route('web::weg::legacy', ['option' => 'mahnen', 'eig' => $this->eigentuemer_id, 'einh' => $this->einheit_id]) . "'>Mahnen</a>";
 
                 $this->hausgeld_kontoauszug_stand($this->eigentuemer_id);
                 echo "<tr><td>$u_link</td><td>$this->eigentuemer_namen</td><td>$this->Wohngeld_soll_a</td><td><b>$this->hg_erg_a €</b><td>$mahn_link</td></tr>";
@@ -2088,8 +2111,9 @@ class weg
         return cal_days_in_month(CAL_GREGORIAN, $monat, $jahr);
     }
 
-    function form_mahnen($eig)
+    function form_mahnen($eig, $einh)
     {
+        $this->einheit_id = $einh;
         $f = new formular ();
         $this->hausgeld_kontoauszug_stand($eig);
         $eig_bez = $this->get_eigentumer_id_infos($eig);
@@ -2166,7 +2190,6 @@ class weg
         $pdf->ezText("<b>Hausgeldrückstand</b>", 12);
 
         $pdf->ezSetDy(13);
-        $pdf->setColor(1.0, 0.0, 0.0);
         if ($this->hg_erg < 0.00) {
             $this->hg_erg = substr($this->hg_erg, 1);
             $this->hg_erg_a = nummer_punkt2komma($this->hg_erg);
@@ -2175,7 +2198,6 @@ class weg
             'justification' => 'right'
         ));
 
-        $pdf->setColor(0.0, 0.0, 0.0);
         $pdf->ezText("<b>zzgl. Mahngebühr</b>", 12);
         $pdf->ezSetDy(13);
 
@@ -2185,10 +2207,8 @@ class weg
         /* Linie über Gesamtrückstand */
         $pdf->ezSetDy(-5);
         $pdf->line(170, $pdf->y, 403, $pdf->y);
-        $pdf->setColor(0.0, 0.0, 0.0);
         $pdf->ezText("<b>Gesamtrückstand</b>", 12);
         $pdf->ezSetDy(13);
-        $pdf->setColor(1.0, 0.0, 0.0);
         $mahngebuehr_r = nummer_komma2punkt($mahngebuehr);
         $gesamt_rueckstand = abs($this->hg_erg) + $mahngebuehr_r;
         $gesamt_rueckstand = nummer_punkt2komma($gesamt_rueckstand);
@@ -2203,19 +2223,18 @@ class weg
         $pdf->ezText("Die konkreten Fehlbeträge entnehmen Sie bitte dem beigefügten Hausgeld-Kontoauszug.", 11);
         $pdf->ezText("Wir fordern Sie auf, den genannten Betrag unter Angabe Ihrer Eigentümernummer\n<b>$this->einheit_kurzname</b> bis zum", 11);
         $pdf->ezSetCmMargins(3, 3, 9, 3);
-        $pdf->setColor(1.0, 0.0, 0.0);
         $pdf->ezText("<b>$datum</b>\n", 11);
         $pdf->ezSetMargins(135, 70, 50, 50);
-        $pdf->ezText("<b>auf das Konto der WEG (IBAN: $g->IBAN1, BIC: $g->BIC)\nbei der $g->kredit_institut\n</b>", 11);
-        $pdf->setColor(0.0, 0.0, 0.0);
-        $pdf->ezText("zu überweisen.\n", 11);
+        $pdf->ezText("auf das Konto der WEG (IBAN: <b>$g->IBAN1</b>, BIC: <b>$g->BIC</b>) bei der $g->kredit_institut zu überweisen.\n", 11);
         $pdf->ezText("Für Rückfragen stehen wir Ihnen gerne zur Verfügung.\n", 11);
         $pdf->ezText("Mit freundlichen Grüßen\n\n\n", 11);
         $pdf->ezText("Berlus GmbH\n\n", 11);
-        $pdf->ezText("Dieses Schreiben wurde maschinell erstellt und ist daher ohne Unterschrift gültig.\n", 11);
+        $pdf->ezText("Dieses Schreiben wurde maschinell erstellt und ist ohne Unterschrift gültig.\n", 9);
         $pdf->addInfo('Title', "Mahnung $mv->personen_name_string");
         $pdf->addInfo('Author', Auth::user()->email);
         $this->hausgeld_kontoauszug_pdf($pdf, $eig, 1);
+        $this->hg_ist_soll_pdf($pdf, $eig, date('Y'));
+        $this->hga_uebersicht_pdf($pdf, $eig);
         ob_end_clean(); // ausgabepuffer leeren
         $pdf->ezStream();
     }
@@ -2492,17 +2511,16 @@ class weg
         $bpdf->b_header($pdf, 'Partner', session()->get('partner_id'), 'portrait', 'Helvetica.afm', 6);
         $this->hausgeld_kontoauszug_pdf($pdf, $eigentuemer_id, 0); // null für keine neue Seite
         if (request()->has('jahr')) {
-            $this->hg_ist_soll_pdf($pdf, $eigentuemer_id);
+            $this->hg_ist_soll_pdf($pdf, $eigentuemer_id, request()->input('jahr'));
             $this->hga_uebersicht_pdf($pdf, $eigentuemer_id);
         }
         $pdf->ezStream();
     }
 
-    function hg_ist_soll_pdf(Cezpdf $pdf, $eigentuemer_id)
+    function hg_ist_soll_pdf(Cezpdf $pdf, $eigentuemer_id, $jahr = null)
     {
         $this->get_eigentumer_id_infos($eigentuemer_id);
-        if (request()->has('jahr')) {
-            $jahr = request()->input('jahr');
+        if ($jahr) {
             if (new DateTime("$jahr-01-01") < new DateTime($this->eigentuemer_von)) {
                 $anfangsdatum = $this->eigentuemer_von;
             } else {
@@ -3232,7 +3250,6 @@ ORDER BY HGA;");
                 'KONTO' => "Konto",
                 'KONTO_BEZ' => "Bezeichnung",
                 'GRUPPEN_BEZ' => "Kostenart",
-                'KONTOART_BEZ' => "Kontoart",
                 'WIRT_E' => "Aufteilung",
                 'FORMEL' => "SCHL.",
                 'BETRAG' => "Betrag (€)"
@@ -3248,7 +3265,7 @@ ORDER BY HGA;");
                 ),
                 'titleFontSize' => 8,
                 'fontSize' => 8,
-                'xPos' => 55,
+                'xPos' => 50,
                 'xOrientation' => 'right',
                 'width' => 500,
                 'cols' => array(
@@ -3263,6 +3280,12 @@ ORDER BY HGA;");
                     'BETRAG' => array(
                         'justification' => 'right',
                         'width' => 60
+                    ),
+                    'WIRT_E' => array(
+                        'width' => 80
+                    ),
+                    'GRUPPEN_BEZ' => array(
+                        'width' => 120
                     )
                 )
             ));
@@ -3324,7 +3347,7 @@ ORDER BY HGA;");
             $pdf->ezText("$this->haus_plz $this->haus_stadt");
 
             $d = new detail ();
-            $anteile_g = $d->finde_detail_inhalt('OBJEKT', $e->objekt_id, 'Gesamtanteile');
+            $anteile_g = $d->finde_detail_inhalt('Objekt', $e->objekt_id, 'Gesamtanteile');
             $anteile_g_a = nummer_punkt2komma_t($anteile_g);
             $pdf->addText(405, 670, 8, "Einheiten:");
             $pdf->addText(465, 670, 8, "$anz_einheiten");
@@ -3332,7 +3355,7 @@ ORDER BY HGA;");
             $pdf->addText(465, 660, 8, "$e->einheit_kurzname");
             $pdf->addText(405, 650, 8, "Gesamtanteile:");
             $pdf->addText(465, 650, 8, "$anteile_g_a");
-            $this->einheit_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+            $this->einheit_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
             $pdf->addText(405, 640, 8, "Ihre MEA:");
             $this->einheit_anteile_a = nummer_punkt2komma_t($this->einheit_anteile);
             $pdf->addText(465, 640, 8, "$this->einheit_anteile_a");
@@ -3389,7 +3412,7 @@ ORDER BY HGA;");
                     if ($formel == 'AUFZUG_PROZENT') {
                         /* Aufzug nach Prozent */
                         $de = new detail ();
-                        $aufzug_prozent = $de->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Aufzugprozent');
+                        $aufzug_prozent = $de->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Aufzugprozent');
                         $wtab_arr [$c] ['AUFTEILEN_G'] = "100%";
                         $wtab_arr [$c] ['AUFTEILEN_T'] = "$aufzug_prozent%";
                         $beteiligung_ant = nummer_komma2punkt($betrag) / 100 * $aufzug_prozent;
@@ -3398,7 +3421,7 @@ ORDER BY HGA;");
                     if ($formel == 'WE-PROZENT') {
                         /* Nach Prozenten der Wohnung */
                         $de = new detail ();
-                        $we_prozent = $de->finde_detail_inhalt('EINHEIT', $einheit_id, 'WE-Prozent');
+                        $we_prozent = $de->finde_detail_inhalt('Einheit', $einheit_id, 'WE-Prozent');
                         $wtab_arr [$c] ['AUFTEILEN_G'] = "100%";
                         $wtab_arr [$c] ['AUFTEILEN_T'] = "$we_prozent%";
                         $beteiligung_ant = nummer_komma2punkt($betrag) / 100 * $we_prozent;
@@ -3442,7 +3465,7 @@ ORDER BY HGA;");
                         if ($formel == 'AUFZUG_PROZENT') {
                             /* Aufzug nach Prozent */
                             $de = new detail ();
-                            $aufzug_prozent = $de->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Aufzugprozent');
+                            $aufzug_prozent = $de->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Aufzugprozent');
                             $wtab_arr [$c] ['AUFTEILEN_G'] = "100%";
                             $wtab_arr [$c] ['AUFTEILEN_T'] = "$aufzug_prozent%";
                             $beteiligung_ant = nummer_komma2punkt($betrag) / 100 * $aufzug_prozent;
@@ -3451,7 +3474,7 @@ ORDER BY HGA;");
                         if ($formel == 'WE-PROZENT') {
                             /* Nach Prozenten der Wohnung */
                             $de = new detail ();
-                            $we_prozent = $de->finde_detail_inhalt('EINHEIT', $einheit_id, 'WE-Prozent');
+                            $we_prozent = $de->finde_detail_inhalt('Einheit', $einheit_id, 'WE-Prozent');
                             $wtab_arr [$c] ['AUFTEILEN_G'] = "100%";
                             $wtab_arr [$c] ['AUFTEILEN_T'] = "$we_prozent%";
                             $beteiligung_ant = nummer_komma2punkt($betrag) / 100 * $we_prozent;
@@ -3535,7 +3558,7 @@ ORDER BY HGA;");
                 ),
                 'titleFontSize' => 8,
                 'fontSize' => 7,
-                'xPos' => 55,
+                'xPos' => 50,
                 'xOrientation' => 'right',
                 'width' => 500,
                 'cols' => array(
@@ -3693,12 +3716,12 @@ ORDER BY HGA;");
         $this->einheit_qm_d = $e->einheit_qm_d;
         $det = new detail ();
 
-        $versprochene_miete = $det->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-KaltmieteINS');
+        $versprochene_miete = $det->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-KaltmieteINS');
         if ($versprochene_miete) {
             $this->versprochene_miete = nummer_komma2punkt($versprochene_miete);
         }
 
-        $this->einheit_qm_weg_d = $det->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Fläche'); // kommt als Kommazahl
+        $this->einheit_qm_weg_d = $det->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Fläche'); // kommt als Kommazahl
         if ($this->einheit_qm_weg_d) {
             $this->einheit_qm_weg = nummer_komma2punkt($this->einheit_qm_weg_d);
         } else {
@@ -3706,7 +3729,7 @@ ORDER BY HGA;");
             $this->einheit_qm_weg_d = $this->einheit_qm_d;
         }
 
-        $this->weg_anteile = $det->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+        $this->weg_anteile = $det->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
 
 
         $this->haus_strasse = $e->haus_strasse;
@@ -4212,7 +4235,7 @@ WHERE KOS_TYP='$kos_typ'
             'BETRAG' => "Betrag",
 
         );
-        $bpdf->addTable($pdf, $ausgaben_tab, $cols_2, '<b>BEWIRTSCHAFTUNGSKOSTEN/-EINNAHMEN</b>', array(
+        $pdf->ezTable($ausgaben_tab, $cols_2, '<b>BEWIRTSCHAFTUNGSKOSTEN/-EINNAHMEN</b>', array(
             'rowGap' => 1.5,
             'showLines' => 1,
             'showHeadings' => 1,
@@ -4888,7 +4911,7 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
 
         $this->get_hga_profil_infos($p_id);
         $d = new detail ();
-        $anteile_g = $d->finde_detail_inhalt('OBJEKT', $this->p_objekt_id, 'Gesamtanteile');
+        $anteile_g = $d->finde_detail_inhalt('Objekt', $this->p_objekt_id, 'Gesamtanteile');
 
         $einheiten_arr = $this->einheiten_weg_tabelle_arr($this->p_objekt_id);
 
@@ -4906,7 +4929,7 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
             $pdf->ezNewPage();
             $e_kn = $einheiten_arr [$a] ['EINHEIT_KURZNAME'];
             $einheit_id = $einheiten_arr [$a] ['EINHEIT_ID'];
-            $einheit_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+            $einheit_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
 
             $pdf->setColor(0.6, 0.6, 0.6);
             $pdf->filledRectangle(50, 690, 500, 15);
@@ -5446,7 +5469,7 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
                     $e_anteile = 1;
                 }
                 if ($gen_key_id == 3) {
-                    $e_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+                    $e_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
                 }
                 if ($gen_key_id == 4) {
                     $e_anteile = 0.00;
@@ -5454,7 +5477,7 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
                 }
                 /* Aufzug nach Prozent */
                 if ($gen_key_id == 5) {
-                    $e_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Aufzugprozent');
+                    $e_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Aufzugprozent');
                     $g_value = 100;
                 }
 
@@ -5634,14 +5657,14 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
             }
 
             $d = new detail ();
-            $anteile_g = $d->finde_detail_inhalt('OBJEKT', $e->objekt_id, 'Gesamtanteile');
+            $anteile_g = $d->finde_detail_inhalt('Objekt', $e->objekt_id, 'Gesamtanteile');
             $pdf->addText(405, 680, 8, "Einheiten:");
             $pdf->addText(465, 680, 8, "$anz_einheiten");
             $pdf->addText(405, 670, 8, "Einheit:");
             $pdf->addText(465, 670, 8, "$e->einheit_kurzname");
             $pdf->addText(405, 660, 8, "Gesamtanteile:");
             $pdf->addText(465, 660, 8, "$anteile_g");
-            $this->einheit_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+            $this->einheit_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
             $pdf->addText(405, 650, 8, "Ihre MEA:");
             $pdf->addText(465, 650, 8, "$this->einheit_anteile");
 
@@ -5695,8 +5718,8 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
             $cols = array(
                 'GRUPPE' => "Kontoart",
                 'KONTO' => "Konto",
-                'BEZ' => "Kontobezeichnung",
-                'KEY_A' => "Verteilungsschlüssel (Ihr Anteil / Gesamt)",
+                'BEZ' => "Kontobezeichnung\n*) beinhaltet haushaltsnahe Dienstleistungen",
+                'KEY_A' => "Verteilungsschlüssel\n(Ihr Anteil / Gesamt)",
                 'BETRAG' => "Gesamt €",
                 'E_BETRAG' => "Ihr Anteil €"
             );
@@ -5718,11 +5741,11 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
                 'cols' => array(
                     'KONTO' => array(
                         'justification' => 'left',
-                        'width' => 32
+                        'width' => 34
                     ),
                     'GRUPPE' => array(
                         'justification' => 'left',
-                        'width' => 95
+                        'width' => 105
                     ),
                     'BETRAG' => array(
                         'justification' => 'right',
@@ -5741,7 +5764,6 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
                     )
                 )
             ));
-            $pdf->ezText("<b> *) Kostenkonto beinhaltet haushaltsnahe Dienstleistungen</b>", 8);
 
             $g = new geldkonto_info ();
             $g->geld_konto_details($this->p_gk_id);
@@ -5914,14 +5936,11 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
             $zzz++;
             $pdf->ezSetDy(-5);
 
-            /* Zweite Seite */
-            $pdf->ezNewPage();
-
             $cols_4 = array(
                 'ART' => "",
                 'ANTEIL' => "Ihr Anteil €"
             );
-            $pdf->ezTable($ru_tab, $cols_4, '<b>2. Rücklagen</b>', array(
+            $bpdf->addTable($pdf, $ru_tab, $cols_4, '<b>2. Rücklagen</b>', array(
                 'rowGap' => 1.5,
                 'showLines' => 1,
                 'showHeadings' => 1,
@@ -5951,7 +5970,7 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
                 'ART' => "",
                 'ANTEIL' => "Ihr Anteil €"
             );
-            $pdf->ezTable($ge_tab, $cols_2, '<b>3. Gesamt</b>', array(
+            $bpdf->addTable($pdf, $ge_tab, $cols_2, '<b>3. Gesamt</b>', array(
                 'rowGap' => 1.5,
                 'showLines' => 1,
                 'showHeadings' => 1,
@@ -5977,13 +5996,24 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
                 )
             ));
 
+            $today = \Carbon\Carbon::today();
+            $geldkonto = \App\Models\Objekte::findOrFail($e->objekt_id)
+                ->bankkonten()
+                ->wherePivot('VERWENDUNGSZWECK', 'Hausgeld')
+                ->wherePivot('VON', '<=', $today)
+                ->where(function ($q) use ($today) {
+                    $q->whereDate('GELD_KONTEN_ZUWEISUNG.BIS', '>=', $today)
+                        ->orWhereNull('GELD_KONTEN_ZUWEISUNG.BIS');
+                })
+                ->first();
+
             /* Zweite Seite */
             $pdf->ezSetDy(-30);
             $pdf->ezText("Sollte Ihre Abrechnung ein Guthaben ausweisen, werden wir nach der Genehmigung der Jahresabrechnung durch die Eigentümerversammlung den Guthabenbetrag auf Ihr Konto überweisen, soweit es nicht zum Ausgleich von aktuellen Rückständen benötigt wird. Wir bitten um die Mitteilung ihrer derzeitigen Kontoverbindung, auch wenn sich diese seit der letzten Abrechnung nicht geändert hat.", 10, array(
                 'justification' => 'full'
             ));
             $pdf->ezSetDy(-10);
-            $pdf->ezText("Sollte Ihre Abrechnung eine Nachzahlung ausweisen, überweisen Sie bitte den Nachzahlungsbetrag nach der Genehmigung der Jahresabrechnung durch die Eigentümerversammlung auf das Ihnen bekannte Hausgeldkonto (Inh.: $g->beguenstigter, IBAN: $g->IBAN1 bei der $g->bankname). Als <b>Verwendungszweck</b> geben Sie bitte <b>Hausgeldabrechnung $jahr $e->einheit_kurzname</b> an.", 10, array(
+            $pdf->ezText("Sollte Ihre Abrechnung eine Nachzahlung ausweisen, überweisen Sie bitte den Nachzahlungsbetrag nach der Genehmigung der Jahresabrechnung durch die Eigentümerversammlung auf das Ihnen bekannte Hausgeldkonto (Inh.: $geldkonto->BEGUENSTIGTER, IBAN: $geldkonto->chunked_IBAN bei der $geldkonto->INSTITUT). Als <b>Verwendungszweck</b> geben Sie bitte <b>Hausgeldabrechnung $jahr $e->einheit_kurzname</b> an.", 10, array(
                 'justification' => 'full'
             ));
             $pdf->ezSetDy(-10);
@@ -6058,14 +6088,14 @@ OR DATE_FORMAT( ENDE, '%Y-%m' ) >= '$jahr-$monat' && DATE_FORMAT( ANFANG, '%Y-%m
                 }
 
                 $d = new detail ();
-                $anteile_g = $d->finde_detail_inhalt('OBJEKT', $e->objekt_id, 'Gesamtanteile');
+                $anteile_g = $d->finde_detail_inhalt('Objekt', $e->objekt_id, 'Gesamtanteile');
                 $pdf->addText(405, 680, 8, "Einheiten:");
                 $pdf->addText(465, 680, 8, "$anz_einheiten");
                 $pdf->addText(405, 670, 8, "Einheit:");
                 $pdf->addText(465, 670, 8, "$e->einheit_kurzname");
                 $pdf->addText(405, 660, 8, "Gesamtanteile:");
                 $pdf->addText(465, 660, 8, "$anteile_g");
-                $this->einheit_anteile = $d->finde_detail_inhalt('EINHEIT', $einheit_id, 'WEG-Anteile');
+                $this->einheit_anteile = $d->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
                 $pdf->addText(405, 650, 8, "Ihre MEA:");
                 $pdf->addText(465, 650, 8, "$this->einheit_anteile");
 
@@ -6937,7 +6967,7 @@ WHERE  `GELDKONTO_ID` ='$gk_id' &&  `KOSTENTRAEGER_TYP` =  'Eigentuemer' &&  `KO
                 $betrag_a = nummer_punkt2komma($this->get_hga_hk_betrag($p_id, $eig_id));
                 $sum += nummer_komma2punkt($betrag_a);
                 echo "<tr><td>$z.) $einheit_kn</td><td>$this->eigentuemer_name_str</td><td>$von</td><td>$bis</td><td>$tage</td><td>";
-                $link_wert = "<a class=\"details\" onclick=\"change_hk_wert_et('Heizungsveerbrauch', '$eig_id', '$betrag_a', '$p_id')\">$betrag_a</a>";
+                $link_wert = "<a class=\"details\" onclick=\"change_hk_wert_et('Heizungsverbrauch', '$eig_id', '$betrag_a', '$p_id')\">$betrag_a</a>";
                 echo $link_wert;
                 $f->hidden_feld('eig_id[]', $eig_id);
                 echo "</td></tr>";
@@ -7412,7 +7442,7 @@ WHERE  `GELDKONTO_ID` ='$gk_id' &&  `KOSTENTRAEGER_TYP` =  'Eigentuemer' &&  `KO
                 $csv [$a] ['EINHEIT_ID'] = $einheit_id;
                 /* Einheitdetails */
                 $det = new details ();
-                $arr [$a] ['E_DETAILS_ARR'] = $det->get_details('EINHEIT', $einheit_id);
+                $arr [$a] ['E_DETAILS_ARR'] = $det->get_details('Einheit', $einheit_id);
                 $det1 = new detail ();
                 $arr [$a] ['EINHEIT_MEA'] = $det1->finde_detail_inhalt('Einheit', $einheit_id, 'WEG-Anteile');
                 $csv [$a] ['EINHEIT_MEA'] = $arr [$a] ['EINHEIT_MEA'];
@@ -7457,7 +7487,7 @@ WHERE  `GELDKONTO_ID` ='$gk_id' &&  `KOSTENTRAEGER_TYP` =  'Eigentuemer' &&  `KO
                     for ($p = 0; $p < $arr [$a] ['ET_ANZ']; $p++) {
                         $det = new details ();
                         $p_id = $arr [$a] ['P_INFO_ARR'] [$p] ['PERSON_ID'];
-                        $arr [$a] ['P_DETAILS'] [] = $det->get_details('PERSON', $p_id);
+                        $arr [$a] ['P_DETAILS'] [] = $det->get_details('Person', $p_id);
                     }
                     $det_string = "";
                     $anz_det_et = count($arr [$a] ['P_DETAILS']);
